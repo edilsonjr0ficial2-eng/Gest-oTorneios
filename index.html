@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Interno - Beach Tennis</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #ff6b6b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #ff6b6b; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .posicao { font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏆 Ranking Beach Tennis</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Pos</th>
+                <th>Jogador</th>
+                <th>Pontos</th>
+                <th>Vitórias</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-ranking">
+            <!-- Os dados serão inseridos aqui via JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Exemplo de dados (Depois podemos trocar isso para puxar do Google Sheets)
+    const jogadores = [
+        { nome: "Carlos Silva", pontos: 1200, vitorias: 15 },
+        { nome: "Ana Souza", pontos: 1150, vitorias: 14 },
+        { nome: "Marcos Paulo", pontos: 980, vitorias: 10 },
+        { nome: "Juliana Costa", pontos: 850, vitorias: 8 }
+    ];
+
+    const tabela = document.getElementById('tabela-ranking');
+
+    jogadores.forEach((jogador, index) => {
+        const linha = `<tr>
+            <td class="posicao">#${index + 1}</td>
+            <td>${jogador.nome}</td>
+            <td>${jogador.pontos}</td>
+            <td>${jogador.vitorias}</td>
+        </tr>`;
+        tabela.innerHTML += linha;
+    });
+</script>
+
+</body>
+</html>
