@@ -110,10 +110,6 @@
     .chave-pos { width: 15px; font-size: 11px; color: var(--text-gray); text-align: right; }
     .seed-badge { background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     .seed-nome { font-size: 12px; font-weight: 600; color: var(--text-dark); flex: 1; }
-    .seed-info-card { background: white; border-radius: 8px; border: 1px solid var(--border-color); padding: 10px; display: flex; flex-direction: column; gap: 4px; }
-    .seed-info-top { display: flex; align-items: center; gap: 8px; }
-    .seed-info-nome { font-size: 13px; font-weight: bold; color: var(--brand-black); }
-    .seed-info-detalhes { font-size: 10px; color: var(--text-gray); display: flex; gap: 10px; align-items: center; }
     @media (max-width: 768px) { .chaves-grid { flex-direction: column; } .form-row { flex-direction: column; gap: 0; } .tabela-header, .tabela-row { font-size: 11px; grid-template-columns: 35px 1fr 60px 35px 35px 35px; padding: 10px 5px; } }
   </style>
 </head>
@@ -578,25 +574,6 @@
       container.innerHTML = html;
     }
 
-    function calcularSeedsCearense() {
-        var gruposData = obterClassificacaoGrupos();
-        if (gruposData.length !== 4) return null;
-        var campeoes = []; var vices = [];
-        gruposData.forEach(function(stats, idx) {
-            if (stats.length >= 1) { var c = {}; for (var key in stats[0]) c[key] = stats[0][key]; c.tipo = 'Campeão'; c.origem = idx + 1; campeoes.push(c); }
-            if (stats.length >= 2) { var v = {}; for (var key in stats[1]) v[key] = stats[1][key]; v.tipo = 'Vice'; v.origem = idx + 1; vices.push(v); }
-        });
-        campeoes.sort(function(a, b) { return (b.vitorias - a.vitorias) || (b.sg - a.sg) || (b.gf - a.gf); });
-        campeoes.forEach(function(c, i) { c.seed = i + 1; });
-        var seedsFinais = [];
-        for (var i = 0; i < 4; i++) {
-            var camp = campeoes[i]; camp.nomeSeed = 'Seed ' + camp.seed; seedsFinais.push(camp);
-            var viceDoGrupo = vices.find(function(v) { return v.origem === camp.origem; });
-            if (viceDoGrupo) { viceDoGrupo.seed = i + 5; viceDoGrupo.nomeSeed = 'Seed ' + viceDoGrupo.seed; seedsFinais.push(viceDoGrupo); }
-        }
-        return seedsFinais;
-    }
-
     function renderizarInfoChaveModal() {
         var container = document.getElementById('conteudoComoMonta');
         var numGrupos = torneioAtual.gruposSorteados ? torneioAtual.gruposSorteados.length : 0;
@@ -611,19 +588,12 @@
         };
 
         if (numGrupos === 4) {
-            var seeds = calcularSeedsCearense();
-            var getS = function(numSeed) { var s = seeds ? seeds.find(function(x) { return x.seed === numSeed; }) : null; return s ? formatarDuplaLinha(s.nome) : 'A definir'; };
-            htmlEsquerda = '<div class="titulo-secao-chave">Estrutura oficial — Campeonato Cearense</div>' +
-                '<div class="jogo-chave-box"><div class="jogo-chave-header">Jogo 1 da próxima fase</div><div class="linha-chave"><div class="chave-pos">1</div><span class="seed-badge">Seed 1</span><span class="seed-nome">' + getS(1) + '</span></div><div class="linha-chave"><div class="chave-pos">2</div><span class="seed-badge">Seed 7</span><span class="seed-nome">' + getS(7) + '</span></div></div>' +
-                '<div class="jogo-chave-box" style="margin-top:10px;"><div class="jogo-chave-header">Jogo 2 da próxima fase</div><div class="linha-chave"><div class="chave-pos">3</div><span class="seed-badge">Seed 6</span><span class="seed-nome">' + getS(6) + '</span></div><div class="linha-chave"><div class="chave-pos">4</div><span class="seed-badge">Seed 4</span><span class="seed-nome">' + getS(4) + '</span></div></div>' +
-                '<div class="jogo-chave-box" style="margin-top:10px;"><div class="jogo-chave-header">Jogo 3 da próxima fase</div><div class="linha-chave"><div class="chave-pos">5</div><span class="seed-badge">Seed 3</span><span class="seed-nome">' + getS(3) + '</span></div><div class="linha-chave"><div class="chave-pos">6</div><span class="seed-badge">Seed 5</span><span class="seed-nome">' + getS(5) + '</span></div></div>' +
-                '<div class="jogo-chave-box" style="margin-top:10px;"><div class="jogo-chave-header">Jogo 4 da próxima fase</div><div class="linha-chave"><div class="chave-pos">7</div><span class="seed-badge">Seed 8</span><span class="seed-nome">' + getS(8) + '</span></div><div class="linha-chave"><div class="chave-pos">8</div><span class="seed-badge">Seed 2</span><span class="seed-nome">' + getS(2) + '</span></div></div>';
-            var renderSCard = function(s) {
-                if(!s) return '';
-                var desc = s.seed <= 4 ? (s.seed + 'º Melhor Campeão de Grupo') : ('Vice do grupo do ' + (s.seed - 4) + 'º melhor campeão');
-                return '<div class="seed-info-card"><div class="seed-info-top"><span class="seed-badge">Seed ' + s.seed + '</span><span class="seed-info-nome">' + formatarDuplaLinha(s.nome) + '</span></div><div class="seed-info-detalhes"><span>' + desc + ' &bull; Grupo ' + s.origem + '</span><span style="margin-left: auto;"><b>V:</b> ' + s.vitorias + ' | <b>SG:</b> ' + s.sg + '</span></div></div>';
-            };
-            htmlDireita = '<div class="titulo-secao-chave">Seeds atuais</div>' + (seeds ? seeds.map(function(s){ return renderSCard(s); }).join('') : '');
+            htmlEsquerda = '<div class="titulo-secao-chave">Estrutura Oficial LetzPlay (4 Grupos)</div>' +
+                '<div class="jogo-chave-box"><div class="jogo-chave-header">Jogo 1 da próxima fase</div><div class="linha-chave"><div class="chave-pos">1</div><span class="seed-badge">1º G1</span><span class="seed-nome">' + getPosFormat(0,0) + '</span></div><div class="linha-chave"><div class="chave-pos">2</div><span class="seed-badge">2º G4</span><span class="seed-nome">' + getPosFormat(3,1) + '</span></div></div>' +
+                '<div class="jogo-chave-box" style="margin-top:10px;"><div class="jogo-chave-header">Jogo 2 da próxima fase</div><div class="linha-chave"><div class="chave-pos">3</div><span class="seed-badge">1º G3</span><span class="seed-nome">' + getPosFormat(2,0) + '</span></div><div class="linha-chave"><div class="chave-pos">4</div><span class="seed-badge">2º G2</span><span class="seed-nome">' + getPosFormat(1,1) + '</span></div></div>' +
+                '<div class="jogo-chave-box" style="margin-top:10px;"><div class="jogo-chave-header">Jogo 3 da próxima fase</div><div class="linha-chave"><div class="chave-pos">5</div><span class="seed-badge">1º G2</span><span class="seed-nome">' + getPosFormat(1,0) + '</span></div><div class="linha-chave"><div class="chave-pos">6</div><span class="seed-badge">2º G3</span><span class="seed-nome">' + getPosFormat(2,1) + '</span></div></div>' +
+                '<div class="jogo-chave-box" style="margin-top:10px;"><div class="jogo-chave-header">Jogo 4 da próxima fase</div><div class="linha-chave"><div class="chave-pos">7</div><span class="seed-badge">1º G4</span><span class="seed-nome">' + getPosFormat(3,0) + '</span></div><div class="linha-chave"><div class="chave-pos">8</div><span class="seed-badge">2º G1</span><span class="seed-nome">' + getPosFormat(0,1) + '</span></div></div>';
+            htmlDireita = '<div class="titulo-secao-chave">Mecânica do Chaveamento</div><div style="font-size: 13px; color: var(--text-gray); margin-top: 10px; line-height: 1.5;">Sistema clássico de posições baseadas no modelo da LetzPlay:<br><br><b>Quartas 1:</b> 1º do Grupo 1 x 2º do Grupo 4<br><b>Quartas 2:</b> 1º do Grupo 3 x 2º do Grupo 2<br><b>Quartas 3:</b> 1º do Grupo 2 x 2º do Grupo 3<br><b>Quartas 4:</b> 1º do Grupo 4 x 2º do Grupo 1<br><br>Esse chaveamento impede que duplas do mesmo grupo se enfrentem antes da Final.</div>';
 
         } else if (numGrupos === 3 && torneioAtual.melhoresTerceiros === 'sim') {
             var terceirosRank = [];
@@ -716,12 +686,17 @@
             return '<div class="match-box"><div class="match-header">' + title + '</div><div class="match-team ' + cls1 + '"><div class="team-name-box" title="' + t1Name + '">' + t1Name + '</div><div class="team-score-box"><input type="number" class="team-score" placeholder="0" value="' + s1 + '" onchange="salvarPlacarMataMata(\'' + faseId + '\', ' + matchIdx + ', 1, this.value)">' + t1Icon + '</div></div><div class="match-team ' + cls2 + '"><div class="team-name-box" title="' + t2Name + '">' + t2Name + '</div><div class="team-score-box"><input type="number" class="team-score" placeholder="0" value="' + s2 + '" onchange="salvarPlacarMataMata(\'' + faseId + '\', ' + matchIdx + ', 2, this.value)">' + t2Icon + '</div></div>' + conectores + '</div>';
         };
 
+        var getPos = function(gIndex, posIndex) { if(gruposData[gIndex] && gruposData[gIndex][posIndex]) return gruposData[gIndex][posIndex].nome; return 'A definir'; };
+
         if (numGrupos === 4) {
             badgeRow.innerHTML = '<div class="badge-header"><span class="fase-badge">Quartas</span></div><div class="badge-header"><span class="fase-badge">Semifinal</span></div><div class="badge-header"><span class="fase-badge">Final</span></div>';
-            var seeds = calcularSeedsCearense();
-            var getS = function(numSeed) { var s = seeds ? seeds.find(function(x) { return x.seed === numSeed; }) : null; return s ? s.nome : 'A definir'; };
-            var qf0_t1 = getS(1); var qf0_t2 = getS(7); var qf1_t1 = getS(6); var qf1_t2 = getS(4);
-            var qf2_t1 = getS(3); var qf2_t2 = getS(5); var qf3_t1 = getS(8); var qf3_t2 = getS(2);
+            
+            // Regra Oficial LetzPlay
+            var qf0_t1 = getPos(0, 0); var qf0_t2 = getPos(3, 1); // 1º G1 vs 2º G4
+            var qf1_t1 = getPos(2, 0); var qf1_t2 = getPos(1, 1); // 1º G3 vs 2º G2
+            var qf2_t1 = getPos(1, 0); var qf2_t2 = getPos(2, 1); // 1º G2 vs 2º G3
+            var qf3_t1 = getPos(3, 0); var qf3_t2 = getPos(0, 1); // 1º G4 vs 2º G1
+            
             var sf0_t1 = getVencedor(qf0_t1, qf0_t2, getSc(qf_s,0,'p1'), getSc(qf_s,0,'p2')); var sf0_t2 = getVencedor(qf1_t1, qf1_t2, getSc(qf_s,1,'p1'), getSc(qf_s,1,'p2'));
             var sf1_t1 = getVencedor(qf2_t1, qf2_t2, getSc(qf_s,2,'p1'), getSc(qf_s,2,'p2')); var sf1_t2 = getVencedor(qf3_t1, qf3_t2, getSc(qf_s,3,'p1'), getSc(qf_s,3,'p2'));
             var fn_t1 = getVencedor(sf0_t1, sf0_t2, getSc(sf_s,0,'p1'), getSc(sf_s,0,'p2')); var fn_t2 = getVencedor(sf1_t1, sf1_t2, getSc(sf_s,1,'p1'), getSc(sf_s,1,'p2'));
@@ -733,7 +708,6 @@
 
         } else if (numGrupos === 3 && torneioAtual.melhoresTerceiros === 'sim') {
             badgeRow.innerHTML = '<div class="badge-header"><span class="fase-badge">Quartas</span></div><div class="badge-header"><span class="fase-badge">Semifinal</span></div><div class="badge-header"><span class="fase-badge">Final</span></div>';
-            var getPos = function(gIndex, posIndex) { if(gruposData[gIndex] && gruposData[gIndex][posIndex]) return gruposData[gIndex][posIndex].nome; return 'A definir'; };
             
             var terceirosRank = [];
             gruposData.forEach(function(stats, gIdx) { if(stats.length >= 3) { var t = Object.assign({}, stats[2]); t.grupoOrigem = gIdx + 1; terceirosRank.push(t); } });
@@ -762,7 +736,6 @@
 
         } else if (numGrupos === 2) {
             badgeRow.innerHTML = '<div class="badge-header"><span class="fase-badge">Semifinal</span></div><div class="badge-header"><span class="fase-badge">Final</span></div>';
-            var getPos = function(gIndex, posIndex) { if(gruposData[gIndex] && gruposData[gIndex][posIndex]) return gruposData[gIndex][posIndex].nome; return 'A definir'; };
             var sf0_t1 = getPos(0, 0); var sf0_t2 = getPos(1, 1); var sf1_t1 = getPos(1, 0); var sf1_t2 = getPos(0, 1);
             var fn_t1 = getVencedor(sf0_t1, sf0_t2, getSc(sf_s,0,'p1'), getSc(sf_s,0,'p2')); var fn_t2 = getVencedor(sf1_t1, sf1_t2, getSc(sf_s,1,'p1'), getSc(sf_s,1,'p2'));
             container.innerHTML = 
